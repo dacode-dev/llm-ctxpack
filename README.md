@@ -60,8 +60,10 @@ MIT
 
 ## Support this project
 
-`llm-ctxpack` is free, MIT-licensed, and has no paid tier. If it saved you time, you can send a tip to the project wallet — no account or sign-up needed on either end. One address, works on any EVM chain:
+`llm-ctxpack` is free, MIT-licensed, and has no paid tier. If it saved you time, you can send a tip to the project wallet — no account or sign-up needed on either end.
 
-`0xc4e8021CdFf1a11946Ed16bd264f77D6B3C0C0e9`
+**[dacode-dev.github.io](https://dacode-dev.github.io/)** — QR code + copy-paste address, one page, no tracking.
+
+Or directly: `0xc4e8021CdFf1a11946Ed16bd264f77D6B3C0C0e9`
 
 Ethereum, Base, Arbitrum, Optimism, Polygon, BNB Chain, Avalanche C-Chain — same address on all of them, native token or stablecoins (USDC/USDT). Pick whichever has the lowest fee for you (Base/Arbitrum/Polygon are cheapest).
