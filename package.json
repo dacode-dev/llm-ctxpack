@@ -1,0 +1,56 @@
+{
+  "name": "llm-ctxpack",
+  "version": "0.2.1",
+  "description": "Pack a repo into LLM-ready context — git-diff-aware and token-budget-aware, unlike full-dump tools.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "llm",
+    "context",
+    "ai",
+    "tokens",
+    "git",
+    "cli",
+    "gpt",
+    "claude",
+    "context-window",
+    "repomix-alternative",
+    "prompt-engineering",
+    "repo-to-text",
+    "codebase-context",
+    "cursor",
+    "claude-code",
+    "chatgpt",
+    "agentic-coding",
+    "secrets-detection",
+    "security"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "llm-ctxpack": "bin/llm-ctxpack.js"
+  },
+  "dependencies": {
+    "gpt-tokenizer": "^3.4.0",
+    "ignore": "^7.0.6"
+  },
+  "funding": {
+    "type": "wallet",
+    "url": "https://etherscan.io/address/0xc4e8021CdFf1a11946Ed16bd264f77D6B3C0C0e9"
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
+  "homepage": "https://www.npmjs.com/package/llm-ctxpack",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dacode-dev/llm-ctxpack.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dacode-dev/llm-ctxpack/issues"
+  }
+}
