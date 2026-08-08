@@ -2,10 +2,8 @@
 
 Pack a repo into LLM-ready context — **git-diff-aware** and **token-budget-aware**, so you're not pasting your whole codebase into a chat window every time.
 
-Most repo-to-context tools dump everything, as-is. `llm-ctxpack` adds three things they don't:
-
-- **`--since <ref>`** — only include files that changed since a git ref. Perfect for handing an agent "what changed" instead of "everything."
-- **`--budget <tokens>`** — cap total output to a token budget, keeping the most recently modified files and telling you exactly what got dropped.
+- **`--since <ref>`** — restricts the *packed file set* to what changed since a git ref, rather than dumping the whole repo and appending a diff on top of it. If 5 files changed in a 2,000-file repo, you get 5 files.
+- **`--budget <tokens>`** — actually fits the output to a token budget: keeps the most recently modified files and drops the rest with an explicit list of what was cut, rather than just failing/erroring when you're over the limit.
 - **Secret redaction, on by default** — API keys, private key blocks, tokens, and `SECRET=`/`PASSWORD=`-style env values get redacted before anything is written out, so you don't accidentally paste a live credential into a chat window. Use `--no-redact` if you really want raw output.
 
 ## Install
