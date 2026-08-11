@@ -46,7 +46,7 @@ Run the same local-only packer in CI without sending repository contents to a th
 ```yaml
 steps:
   - uses: actions/checkout@v4
-  - uses: dacode-dev/llm-ctxpack@v0.2.2
+  - uses: dacode-dev/llm-ctxpack@v0.3.0
     with:
       model: claude-sonnet
       output: artifacts/context.md
