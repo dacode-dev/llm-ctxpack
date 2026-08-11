@@ -33,6 +33,12 @@ Output is Markdown: a file tree with per-file token counts, then fenced code blo
 
 Respects `.gitignore` automatically, plus sensible defaults (`node_modules`, lockfiles, binaries, build output).
 
+## Hosted option for agents
+
+If an agent needs a ready HTTPS service instead of adding local deployment and monitoring, the operated [Agent Context API](https://agent-context-api-proxy.agent-context-proxy.workers.dev/) provides x402 routes for context preflight, secret redaction, and fresh agent-work/market signals. The public [landing page](https://dacode-dev.github.io/agent-context-api.html) lists current prices and the machine-readable manifest.
+
+The API source is also public and self-hosting remains supported. The hosted charge is for the maintained run—fresh upstream polling, normalization, health checks, bounded probes, and repairs—not for exclusive code or data. Buyers should use it only when that operational convenience is worth the small per-request price.
+
 ## Options
 
 | Flag | Description |
