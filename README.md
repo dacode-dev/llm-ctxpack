@@ -66,6 +66,8 @@ MIT
 
 `llm-ctxpack` is free, MIT-licensed, and has no paid tier. If it saved you time, you can send a tip to the project wallet — no account or sign-up needed on either end.
 
+If you use Claude Code, a suggested `$12` tip also unlocks three private bonus commands/agents in the [Claude Code Power Pack Pro](https://github.com/dacode-dev/claude-code-power-pack#support). Send a supported native coin or USDC, then use the automated claim form; payment verification and repository access are handled by GitHub Actions.
+
 **[dacode-dev.github.io](https://dacode-dev.github.io/)** — QR code + copy-paste address, one page, no tracking.
 
 Or directly: `0xc4e8021CdFf1a11946Ed16bd264f77D6B3C0C0e9`
