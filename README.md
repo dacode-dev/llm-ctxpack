@@ -39,6 +39,21 @@ If an agent needs a ready HTTPS service instead of adding local deployment and m
 
 The API source is also public and self-hosting remains supported. The hosted charge is for the maintained run—fresh upstream polling, normalization, health checks, bounded probes, and repairs—not for exclusive code or data. Buyers should use it only when that operational convenience is worth the small per-request price.
 
+## GitHub Action
+
+Run the same local-only packer in CI without sending repository contents to a third party:
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - uses: dacode-dev/llm-ctxpack@v0.2.2
+    with:
+      model: claude-sonnet
+      output: artifacts/context.md
+```
+
+The action writes a redacted, token-budgeted Markdown file to the runner and exposes its path as the `context-file` output. It installs the pinned npm package at runtime; no API key is required.
+
 ## Options
 
 | Flag | Description |

@@ -1,0 +1,53 @@
+name: LLM Context Pack
+description: Create a git-aware, token-budgeted, secret-redacted context file for coding agents.
+author: dacode-dev
+branding:
+  icon: package
+  color: blue
+
+inputs:
+  path:
+    description: Repository path to pack.
+    required: false
+    default: .
+  since:
+    description: Optional git ref; only files changed since this ref are packed.
+    required: false
+  budget:
+    description: Optional maximum output token count.
+    required: false
+  model:
+    description: Optional model preset such as claude-sonnet or gpt-4o.
+    required: false
+  output:
+    description: Output Markdown path relative to the workspace.
+    required: false
+    default: context.md
+
+outputs:
+  context-file:
+    description: Path of the generated Markdown context file.
+    value: ${{ steps.pack.outputs.context-file }}
+
+runs:
+  using: composite
+  steps:
+    - id: pack
+      shell: bash
+      env:
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_SINCE: ${{ inputs.since }}
+        INPUT_BUDGET: ${{ inputs.budget }}
+        INPUT_MODEL: ${{ inputs.model }}
+        INPUT_OUTPUT: ${{ inputs.output }}
+      run: |
+        set -euo pipefail
+        args=("$INPUT_PATH")
+        if [[ -n "$INPUT_SINCE" ]]; then args+=(--since "$INPUT_SINCE"); fi
+        if [[ -n "$INPUT_BUDGET" ]]; then args+=(--budget "$INPUT_BUDGET"); fi
+        if [[ -n "$INPUT_MODEL" ]]; then args+=(--model "$INPUT_MODEL"); fi
+        mkdir -p "$(dirname -- "$INPUT_OUTPUT")"
+        install_dir="${RUNNER_TEMP:-${TMPDIR:-/tmp}}/llm-ctxpack-0.2.2-${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}"
+        npm install --prefix "$install_dir" --no-save --ignore-scripts --no-audit --no-fund llm-ctxpack@0.2.2 >/dev/null
+        "$install_dir/node_modules/.bin/llm-ctxpack" "${args[@]}" --out "$INPUT_OUTPUT"
+        echo "context-file=$INPUT_OUTPUT" >> "$GITHUB_OUTPUT"
