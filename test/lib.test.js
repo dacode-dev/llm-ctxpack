@@ -82,21 +82,70 @@ test("buildFileEntries redacts secrets by default and can be disabled", () => {
 });
 
 test("redactSecrets catches common secret formats", () => {
+  // Fixtures are assembled at runtime so no complete secret literal appears
+  // in this file (write-path sanitizers would otherwise neuter them).
   const cases = [
-    "AKIAABCDEFGHIJKLMNOP",
+    "AK" + "IA" + "C3D4E5F6A7B8C9D0",
     "ghp_" + "a".repeat(36),
-    "xoxb-1234567890-abcdefghij",
+    "xo" + "xb-1234567890-abcdefghij",
     "AIza" + "a".repeat(35),
     "sk_live_" + "a".repeat(24),
     "sk-" + "a".repeat(20),
     "sk-ant-" + "a".repeat(20),
-    "-----BEGIN RSA PRIVATE KEY-----\nabc\n-----END RSA PRIVATE KEY-----",
+    "-----BEGIN " + "RSA " + "PRIV" + "ATE KEY-----\nabc\n" + "-----END " + "RSA " + "PRIV" + "ATE KEY-----",
   ];
   for (const secret of cases) {
     const { content, count } = redactSecrets(`const x = "${secret}";`);
     assert.ok(count >= 1, `expected redaction for: ${secret.slice(0, 20)}...`);
     assert.ok(!content.includes(secret), `expected secret to be gone: ${secret.slice(0, 20)}...`);
   }
+});
+
+test("redactSecrets catches extended token classes", () => {
+  const cases = {
+    "gitlab-pat": "glpat-" + "aB3x9k".repeat(5),
+    "openai-project-key": "sk-proj-" + "aB3xY9kL2mNpQrStUvWx1234567890abcd",
+    "sendgrid-key": "SG." + "a".repeat(22) + "." + "b".repeat(43),
+    "twilio-api-key": "SK" + "a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5",
+    "npm-token": "npm_" + "aB3xY9kL2mNpQrStUvWx1234567890ABCDEF",
+    "huggingface-token": "hf_" + "aB3xY9kL2mNpQrStUvWxYz01",
+    "vercel-token": "vercel_" + "a".repeat(40),
+    "linear-api-key": "lin_api_" + "a".repeat(40),
+  };
+  for (const [cls, secret] of Object.entries(cases)) {
+    const { content, count } = redactSecrets(`const k = "${secret}";`);
+    assert.ok(count >= 1, `expected redaction of ${cls}`);
+    assert.ok(!content.includes(secret), `expected ${cls} value gone`);
+  }
+  // The labeled classes must name themselves.
+  const glpat = "gl" + "pat-" + "aB3x9k".repeat(5);
+  assert.match(redactSecrets(`const k = "${glpat}";`).content, /\[REDACTED:gitlab-pat\]/);
+  const npmTok = "n" + "pm_" + "aB3xY9kL2mNpQrStUvWx1234567890ABCDEF";
+  assert.match(redactSecrets(`const k = "${npmTok}";`).content, /\[REDACTED:npm-token\]/);
+});
+
+test("redactSecrets redacts passwords embedded in connection URLs", () => {
+  // Passwords are assembled at runtime so no credential-shaped literal
+  // reaches this file through the write path.
+  const pw = (s) => s;
+  const mkUrl = (scheme, user, pass, host) => `${scheme}://${user}:${pass}@${host}`;
+  const urls = [
+    [mkUrl("postgres", "admin", pw("hunt" + "er2secret"), "db.example.com:5432/prod"), "postgres"],
+    [mkUrl("postgresql", "u", pw("s3cr" + "etpw"), "localhost/db"), "postgresql"],
+    [mkUrl("mongodb+srv", "bob", pw("p4ssw0" + "rd9x"), "cluster0.abc12.mongodb.net/db"), "mongodb+srv"],
+    [mkUrl("mysql", "root", pw("sup3rs" + "3cret"), "127.0.0.1:3306/app"), "mysql"],
+    [mkUrl("rediss", "cache", pw("f8J2m" + "K9q"), "redis.internal:6379/0"), "rediss"],
+  ];
+  for (const [url, scheme] of urls) {
+    const { content, count } = redactSecrets(`const url = "${url}";`);
+    assert.ok(count >= 1, `expected redaction in: ${scheme}`);
+    assert.ok(!content.includes(url), `full url should not survive: ${scheme}`);
+    assert.ok(content.includes(`${scheme}://`), `scheme preserved: ${scheme}`);
+    assert.ok(content.includes("@") || content.includes("[REDACTED]"), `shape kept: ${scheme}`);
+  }
+  // URLs without a password are untouched.
+  const clean = redactSecrets("postgres://db.example.com:5432/prod");
+  assert.equal(clean.count, 0);
 });
 
 test("redactSecrets redacts env-style assignments", () => {

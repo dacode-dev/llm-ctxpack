@@ -4,7 +4,7 @@ Pack a repo into LLM-ready context — **git-diff-aware** and **token-budget-awa
 
 - **`--since <ref>`** — restricts the *packed file set* to what changed since a git ref, rather than dumping the whole repo and appending a diff on top of it. If 5 files changed in a 2,000-file repo, you get 5 files.
 - **`--budget <tokens>`** — actually fits the output to a token budget: keeps the most recently modified files and drops the rest with an explicit list of what was cut, rather than just failing/erroring when you're over the limit.
-- **Secret redaction, on by default** — API keys, private key blocks, tokens, and `SECRET=`/`PASSWORD=`-style env values get redacted before anything is written out, so you don't accidentally paste a live credential into a chat window. Use `--no-redact` if you really want raw output.
+- **Secret redaction, on by default** — API keys, private key blocks, tokens (`ghp_…`, `glpat-…`, `npm_…`, `sk-…`, `sk-proj-…`, `hf_…`, `SG.…` and more), `SECRET=`/`PASSWORD=`-style env values, **and passwords embedded in database connection URLs** (`postgres://user:pw@host` → `postgres://user:[REDACTED]@host`) get redacted before anything is written out, so you don't accidentally paste a live credential into a chat window. Use `--no-redact` if you really want raw output.
 
 ## Install
 
