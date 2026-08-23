@@ -12,18 +12,29 @@ import {
   budgetForModel,
 } from "../src/lib.js";
 
+function parseNumeric(argv, i, flag) {
+  const raw = argv[i + 1];
+  const n = Number.parseInt(raw, 10);
+  if (!Number.isFinite(n) || n <= 0) {
+    console.error(`llm-ctxpack: ${flag} requires a positive integer (got "${raw}")`);
+    process.exit(1);
+  }
+  return n;
+}
+
 function parseArgs(argv) {
   const args = { root: ".", out: null, since: null, budget: null, model: null, redact: true, include: [], exclude: [], top: null };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--since") args.since = argv[++i];
-    else if (a === "--budget") args.budget = parseInt(argv[++i], 10);
+    else if (a === "--budget") args.budget = parseNumeric(argv, i++, "--budget");
     else if (a === "--model") args.model = argv[++i];
     else if (a === "--out" || a === "-o") args.out = argv[++i];
     else if (a === "--no-redact") args.redact = false;
     else if (a === "--include") args.include.push(argv[++i]);
     else if (a === "--exclude") args.exclude.push(argv[++i]);
-    else if (a === "--top") args.top = parseInt(argv[++i], 10);
+    else if (a === "--top") args.top = parseNumeric(argv, i++, "--top");
+    else if (a === "--version") args.version = true;
     else if (a === "--help" || a === "-h") args.help = true;
     else args.root = a;
   }
@@ -63,6 +74,10 @@ Examples:
 function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) return printHelp();
+  if (args.version) {
+    console.log(`llm-ctxpack v${process.env.npm_package_version || "0.5.0"}`);
+    return;
+  }
 
   if (args.model) {
     const modelBudget = budgetForModel(args.model);

@@ -196,6 +196,22 @@ test("CLI --model flag caps output and errors on unknown model", () => {
   rmSync(dir, { recursive: true, force: true });
 });
 
+test("CLI --version prints the package version and exits cleanly", () => {
+  const result = spawnSync("node", [join(import.meta.dirname, "../bin/llm-ctxpack.js"), "--version"], { encoding: "utf8" });
+  assert.equal(result.status, 0);
+  assert.match(result.stdout.trim(), /^llm-ctxpack v\d+\.\d+\.\d+$/);
+});
+
+test("CLI numeric flags reject non-positive-integer values with a clear error", () => {
+  for (const flag of ["--budget", "--top"]) {
+    const bad = spawnSync("node", [join(import.meta.dirname, "../bin/llm-ctxpack.js"), ".", flag, "abc"], { encoding: "utf8" });
+    assert.notEqual(bad.status, 0, `${flag} abc should fail`);
+    assert.match(bad.stderr, new RegExp(`${flag} requires a positive integer`));
+    const zero = spawnSync("node", [join(import.meta.dirname, "../bin/llm-ctxpack.js"), ".", flag, "0"], { encoding: "utf8" });
+    assert.notEqual(zero.status, 0, `${flag} 0 should fail`);
+  }
+});
+
 test("CLI runs end to end and writes output file", () => {
   const dir = makeTmpRepo();
   const outFile = join(dir, "out.md");
