@@ -120,7 +120,20 @@ export function getChangedFiles(root, sinceRef) {
       ["diff", "--name-only", "--diff-filter=ACMR", sinceRef, "--"],
       { cwd: root, encoding: "utf8" }
     );
-    return new Set(output.split("\n").filter(Boolean));
+    const changed = new Set(output.split("\n").filter(Boolean));
+    // Brand-new (untracked) files are not in any ref yet, but they are usually
+    // exactly what a reviewer needs. `ls-files --others --exclude-standard`
+    // respects .gitignore, and results are intersected with walkRepo's list
+    // anyway, so ignored artifacts never enter the pack through this path.
+    const others = execFileSync(
+      "git",
+      ["ls-files", "--others", "--exclude-standard"],
+      { cwd: root, encoding: "utf8" }
+    );
+    for (const line of others.split("\n")) {
+      if (line) changed.add(line);
+    }
+    return changed;
   } catch (err) {
     throw new Error(`git diff against "${sinceRef}" failed: ${err.message}`);
   }

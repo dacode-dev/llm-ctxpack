@@ -6,6 +6,7 @@ import { join } from "path";
 import { execFileSync, spawnSync } from "child_process";
 import {
   walkRepo,
+  getChangedFiles,
   countTokens,
   selectWithinBudget,
   buildFileEntries,
@@ -200,6 +201,26 @@ test("CLI --version prints the package version and exits cleanly", () => {
   const result = spawnSync("node", [join(import.meta.dirname, "../bin/llm-ctxpack.js"), "--version"], { encoding: "utf8" });
   assert.equal(result.status, 0);
   assert.match(result.stdout.trim(), /^llm-ctxpack v\d+\.\d+\.\d+$/);
+});
+
+test("getChangedFiles includes untracked new files (they are what a reviewer needs)", () => {
+  const dir = makeTmpRepo();
+  execFileSync("git", ["init"], { cwd: dir });
+  execFileSync("git", ["config", "user.email", "t@t"], { cwd: dir });
+  execFileSync("git", ["config", "user.name", "t"], { cwd: dir });
+  // tmp repos are not git repos by default; --since should throw before init.
+  assert.throws(() => getChangedFiles(dir, "HEAD"));
+  writeFileSync(join(dir, "committed.js"), "// committed\n");
+  execFileSync("git", ["add", "."], { cwd: dir });
+  execFileSync("git", ["commit", "-m", "base"], { cwd: dir });
+  // untracked + explicitly ignored files
+  writeFileSync(join(dir, "brand-new.js"), "// brand new work\n");
+  writeFileSync(join(dir, ".gitignore"), "ignored.txt\nignored-artifact.log\n");
+  writeFileSync(join(dir, "ignored-artifact.log"), "junk");
+  const changed = getChangedFiles(dir, "HEAD");
+  assert.ok(changed.has("brand-new.js"), "untracked file must be included");
+  assert.ok(!changed.has("ignored-artifact.log"), "gitignored file must stay excluded");
+  rmSync(dir, { recursive: true, force: true });
 });
 
 test("CLI numeric flags reject non-positive-integer values with a clear error", () => {
