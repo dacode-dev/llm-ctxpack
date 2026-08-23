@@ -4,6 +4,8 @@ import { resolve } from "path";
 import {
   walkRepo,
   getChangedFiles,
+  filterFiles,
+  topFiles,
   buildFileEntries,
   selectWithinBudget,
   renderMarkdown,
@@ -11,7 +13,7 @@ import {
 } from "../src/lib.js";
 
 function parseArgs(argv) {
-  const args = { root: ".", out: null, since: null, budget: null, model: null, redact: true };
+  const args = { root: ".", out: null, since: null, budget: null, model: null, redact: true, include: [], exclude: [], top: null };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--since") args.since = argv[++i];
@@ -19,6 +21,9 @@ function parseArgs(argv) {
     else if (a === "--model") args.model = argv[++i];
     else if (a === "--out" || a === "-o") args.out = argv[++i];
     else if (a === "--no-redact") args.redact = false;
+    else if (a === "--include") args.include.push(argv[++i]);
+    else if (a === "--exclude") args.exclude.push(argv[++i]);
+    else if (a === "--top") args.top = parseInt(argv[++i], 10);
     else if (a === "--help" || a === "-h") args.help = true;
     else args.root = a;
   }
@@ -36,6 +41,9 @@ Options:
   --budget <tokens>  Cap total output to this many tokens, keeping most recently modified files
   --model <name>    Set budget from a model's context window instead of a raw number
                      (e.g. claude-sonnet, gpt-4o, gemini). Leaves headroom for the response.
+  --include <glob>  Only include paths matching this gitignore-style pattern (repeatable)
+  --exclude <glob>  Skip paths matching this gitignore-style pattern (repeatable; wins over --include)
+  --top <n>         After packing, print the n largest packed files by token count to stderr
   --out, -o <file>  Write output to a file instead of stdout
   --no-redact       Don't redact detected API keys/secrets (redaction is on by default)
   --help, -h        Show this help
@@ -45,6 +53,9 @@ Examples:
   llm-ctxpack . --since main          # pack only what changed vs main
   llm-ctxpack . --budget 50000        # fit within a 50k token budget
   llm-ctxpack . --model claude-sonnet # fit within Claude's context window
+  llm-ctxpack . --include "src/**"    # only files under src/
+  llm-ctxpack . --exclude "*.test.js" --exclude "docs/**"
+  llm-ctxpack . --top 10              # show the 10 largest files by token count
   llm-ctxpack . --since main --budget 20000 -o context.md
 `);
 }
@@ -63,7 +74,7 @@ function main() {
   }
 
   const root = resolve(args.root);
-  let relFiles = walkRepo(root);
+  let relFiles = filterFiles(walkRepo(root), { include: args.include, exclude: args.exclude });
 
   if (args.since) {
     const changed = getChangedFiles(root, args.since);
@@ -76,6 +87,14 @@ function main() {
     const result = selectWithinBudget(entries, args.budget);
     entries = result.selected;
     dropped = result.dropped;
+  }
+
+  if (args.top) {
+    const top = topFiles(entries, args.top);
+    if (top.length) {
+      console.error(`\nTop ${top.length} largest packed file(s):`);
+      for (const e of top) console.error(`  ${String(e.tokens).padStart(7)} tok  ${e.rel}`);
+    }
   }
 
   const markdown = renderMarkdown(entries, {

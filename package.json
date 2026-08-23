@@ -1,7 +1,7 @@
 {
   "name": "llm-ctxpack",
-  "version": "0.2.2",
-  "description": "Pack a repo into LLM-ready context — git-diff-aware and token-budget-aware, unlike full-dump tools.",
+  "version": "0.4.0",
+  "description": "Pack a repo into LLM-ready context \u2014 git-diff-aware and token-budget-aware, unlike full-dump tools.",
   "main": "index.js",
   "scripts": {
     "test": "node --test"

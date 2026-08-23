@@ -26,6 +26,9 @@ npm install -g llm-ctxpack
 llm-ctxpack .                              # pack whole repo
 llm-ctxpack . --since main                 # only what changed vs main
 llm-ctxpack . --budget 50000               # fit within a 50k token budget
+llm-ctxpack . --include "src/**"           # only files under src/
+llm-ctxpack . --exclude "*.test.js"        # skip test files
+llm-ctxpack . --top 10                     # also list the 10 largest files
 llm-ctxpack . --since main --budget 20000 -o context.md
 ```
 
@@ -60,6 +63,9 @@ The action writes a redacted, token-budgeted Markdown file to the runner and exp
 |---|---|
 | `--since <ref>` | Only include files changed since this git ref (e.g. `main`, `HEAD~5`) |
 | `--budget <tokens>` | Cap total output tokens, keeping most recently modified files first |
+| `--include <glob>` | Only include paths matching this gitignore-style pattern (repeatable) |
+| `--exclude <glob>` | Skip paths matching this gitignore-style pattern (repeatable; wins over `--include`) |
+| `--top <n>` | Print the n largest packed files by token count to stderr |
 | `--out, -o <file>` | Write to a file instead of stdout |
 | `--no-redact` | Disable secret redaction (on by default) |
 

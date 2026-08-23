@@ -93,6 +93,26 @@ export function walkRepo(root) {
   return out;
 }
 
+// Filter a relative-path list through user-supplied include/exclude patterns.
+// Both use gitignore-style syntax via the `ignore` package. Excludes win over
+// includes; an empty include list means "everything not excluded".
+export function filterFiles(relFiles, { include = [], exclude = [] } = {}) {
+  let files = relFiles;
+  if (include.length) {
+    const igInclude = ignore().add(include);
+    files = files.filter((f) => igInclude.ignores(f));
+  }
+  if (exclude.length) {
+    const igExclude = ignore().add(exclude);
+    files = files.filter((f) => !igExclude.ignores(f));
+  }
+  return files;
+}
+
+export function topFiles(entries, n) {
+  return [...entries].sort((a, b) => b.tokens - a.tokens).slice(0, Math.max(0, Math.floor(n)));
+}
+
 export function getChangedFiles(root, sinceRef) {
   try {
     const output = execFileSync(

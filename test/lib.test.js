@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync, readFileSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
-import { execFileSync } from "child_process";
+import { execFileSync, spawnSync } from "child_process";
 import {
   walkRepo,
   countTokens,
@@ -11,6 +11,8 @@ import {
   buildFileEntries,
   budgetForModel,
   redactSecrets,
+  filterFiles,
+  topFiles,
 } from "../src/lib.js";
 
 function makeTmpRepo() {
@@ -152,5 +154,71 @@ test("CLI runs end to end and writes output file", () => {
   const content = readFileSync(outFile, "utf8");
   assert.match(content, /# Context pack/);
   assert.match(content, /src\/a\.js/);
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test("filterFiles includes and excludes with gitignore-style patterns", () => {
+  const files = ["src/a.js", "src/a.test.js", "docs/guide.md", "README.md"];
+  assert.deepEqual(
+    filterFiles(files, { include: ["src/**"] }).sort(),
+    ["src/a.js", "src/a.test.js"]
+  );
+  assert.deepEqual(
+    filterFiles(files, { exclude: ["**/*.test.js"] }).sort(),
+    ["README.md", "docs/guide.md", "src/a.js"]
+  );
+  // Excludes win over includes.
+  assert.deepEqual(
+    filterFiles(files, { include: ["src/**"], exclude: ["src/*.test.js"] }).sort(),
+    ["src/a.js"]
+  );
+  // No patterns means everything passes through.
+  assert.deepEqual(filterFiles(files, {}), files);
+});
+
+test("topFiles returns the n largest entries by token count", () => {
+  const entries = [
+    { rel: "small.js", tokens: 10 },
+    { rel: "big.js", tokens: 500 },
+    { rel: "mid.js", tokens: 100 },
+  ];
+  const top = topFiles(entries, 2);
+  assert.deepEqual(top.map((e) => e.rel), ["big.js", "mid.js"]);
+  assert.equal(topFiles(entries, 0).length, 0);
+  assert.equal(topFiles(entries, 99).length, 3);
+});
+
+test("CLI --include/--exclude restrict the packed file set", () => {
+  const dir = makeTmpRepo();
+  const outFile = join(dir, "out.md");
+  execFileSync("node", [
+    join(import.meta.dirname, "../bin/llm-ctxpack.js"),
+    dir,
+    "--include",
+    "src/**",
+    "--exclude",
+    "**/b.js",
+    "-o",
+    outFile,
+  ]);
+  const content = readFileSync(outFile, "utf8");
+  assert.match(content, /src\/a\.js/);
+  assert.doesNotMatch(content, /src\/b\.js/);
+  assert.doesNotMatch(content, /\.gitignore/);
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test("CLI --top prints the largest packed files to stderr", () => {
+  const dir = makeTmpRepo();
+  const result = spawnSync(
+    "node",
+    [join(import.meta.dirname, "../bin/llm-ctxpack.js"), dir, "--top", "1"],
+    { encoding: "utf8" }
+  );
+  assert.equal(result.status, 0, result.stderr);
+  // b.js repeats its line 50x, so it is the largest packed file.
+  assert.match(result.stderr, /Top 1 largest packed file\(s\):/);
+  assert.match(result.stderr, /src\/b\.js/);
+  assert.match(result.stdout, /# Context pack/);
   rmSync(dir, { recursive: true, force: true });
 });
