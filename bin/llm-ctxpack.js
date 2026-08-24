@@ -51,7 +51,7 @@ Options:
   --since <ref>     Only include files changed since this git ref (e.g. main, HEAD~5)
   --budget <tokens>  Cap total output to this many tokens, keeping most recently modified files
   --model <name>    Set budget from a model's context window instead of a raw number
-                     (e.g. claude-sonnet, gpt-4o, gemini). Leaves headroom for the response.
+                     (e.g. claude-sonnet, gpt-5, grok, gemini). Leaves headroom for the response.
   --include <glob>  Only include paths matching this gitignore-style pattern (repeatable)
   --exclude <glob>  Skip paths matching this gitignore-style pattern (repeatable; wins over --include)
   --top <n>         After packing, print the n largest packed files by token count to stderr
