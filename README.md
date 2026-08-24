@@ -73,7 +73,7 @@ Token counts use the same tokenizer family as GPT/Claude-class models ([`gpt-tok
 
 ## Works with
 
-Any tool that takes pasted-in text as context: Claude, Claude Code, ChatGPT, Cursor, GitHub Copilot Chat, or a custom agent's system prompt. `--model` presets cover the common ones; `--budget` works for anything else.
+Any tool that takes pasted-in text as context: Claude, Claude Code, ChatGPT, Cursor, GitHub Copilot Chat, or a custom agent's system prompt. `--model` presets cover the common ones — including current-generation windows like `gpt-5` (400K) and `grok` (256K); `--budget` works for anything else.
 
 ## Why
 
