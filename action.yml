@@ -47,7 +47,7 @@ runs:
         if [[ -n "$INPUT_BUDGET" ]]; then args+=(--budget "$INPUT_BUDGET"); fi
         if [[ -n "$INPUT_MODEL" ]]; then args+=(--model "$INPUT_MODEL"); fi
         mkdir -p "$(dirname -- "$INPUT_OUTPUT")"
-        install_dir="${RUNNER_TEMP:-${TMPDIR:-/tmp}}/llm-ctxpack-0.2.2-${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}"
-        npm install --prefix "$install_dir" --no-save --ignore-scripts --no-audit --no-fund llm-ctxpack@0.2.2 >/dev/null
+        install_dir="${RUNNER_TEMP:-${TMPDIR:-/tmp}}/llm-ctxpack-0.5.3-${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}"
+        npm install --prefix "$install_dir" --no-save --ignore-scripts --no-audit --no-fund "llm-ctxpack@github:dacode-dev/llm-ctxpack#v0.5.3" >/dev/null
         "$install_dir/node_modules/.bin/llm-ctxpack" "${args[@]}" --out "$INPUT_OUTPUT"
         echo "context-file=$INPUT_OUTPUT" >> "$GITHUB_OUTPUT"

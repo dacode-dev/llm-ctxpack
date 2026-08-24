@@ -55,7 +55,7 @@ steps:
       output: artifacts/context.md
 ```
 
-The action writes a redacted, token-budgeted Markdown file to the runner and exposes its path as the `context-file` output. It installs the pinned npm package at runtime; no API key is required.
+The action writes a redacted, token-budgeted Markdown file to the runner and exposes its path as the `context-file` output. It installs the current engine (pinned to the v0.5.3 GitHub tag) at runtime; no API key is required.
 
 ## Options
 
