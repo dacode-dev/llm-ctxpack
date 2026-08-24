@@ -173,6 +173,14 @@ test("budgetForModel returns null for unknown models", () => {
   assert.equal(budgetForModel("some-made-up-model-xyz"), null);
 });
 
+test("budgetForModel recognizes newer model families (gpt-5, grok) with correct windows", () => {
+  assert.equal(budgetForModel("gpt-5"), Math.floor(400000 * 0.85));
+  assert.equal(budgetForModel("gpt-5-mini"), Math.floor(400000 * 0.85));
+  assert.equal(budgetForModel("grok-4"), Math.floor(256000 * 0.85));
+  // ordering guard: gpt-5 must match before the generic gpt rule
+  assert.notEqual(budgetForModel("gpt-5"), Math.floor(128000 * 0.85));
+});
+
 test("CLI --model flag caps output and errors on unknown model", () => {
   const dir = makeTmpRepo();
   const outFile = join(dir, "out.md");

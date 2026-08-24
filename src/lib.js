@@ -213,10 +213,12 @@ export function countTokens(text) {
 const MODEL_CONTEXT_WINDOWS = [
   [/claude.*(opus|sonnet|haiku)/i, 200000],
   [/claude/i, 200000],
+  [/gpt-5/i, 400000],
   [/gpt-4o|gpt-4-turbo|gpt-4\.1/i, 128000],
   [/gpt-3\.5/i, 16000],
   [/gpt/i, 128000],
   [/gemini/i, 1000000],
+  [/grok/i, 256000],
   [/llama-3\.1|llama-3\.2|llama-3\.3/i, 128000],
   [/llama/i, 8000],
   [/mistral|mixtral/i, 128000],
